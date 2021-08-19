@@ -1,7 +1,11 @@
 from django.shortcuts import render,redirect
+from django.db.models import Count
 from django.http import JsonResponse
 from .models import User, Author, Book, UserBook
 import bcrypt
+from datetime import datetime
+import locale
+locale.setlocale(locale.LC_TIME, "es_cl") 
 # Create your views here.
 def index(request):
     if request.method == "GET":
@@ -88,7 +92,7 @@ def create_book(request):
             uploaded_by = User.objects.get(id=request.session["id"])
             new_book = Book.objects.create(title=title,author=author,uploaded_by=uploaded_by)
             UserBook.objects.create(user=uploaded_by,book=new_book,rating=request.POST["rating"],review=request.POST["review"])
-            return JsonResponse({"resultado" : 200})
+            return JsonResponse({"resultado" : new_book.id})
         return redirect("/")
         
 def view_book(request,idBook):
@@ -98,13 +102,12 @@ def view_book(request,idBook):
             context = {
                 "usuario" : User.objects.get(id=idusuario),
                 "libro" : Book.objects.get(id=idBook),
-                "reviews" : UserBook.objects.filter(book=Book.objects.get(id=idBook)),
+                "reviews" : UserBook.objects.filter(book=Book.objects.get(id=idBook)).order_by("-id"),
             }
             return render(request, "view_book.html", context)
         return redirect("/")
     elif request.method == "POST":
         if "id" in request.session:
-            print(request.POST)
             errors = UserBook.objects.validate_review(request.POST)
             if len(errors) > 0:
                  return JsonResponse(errors)
@@ -114,9 +117,14 @@ def view_book(request,idBook):
             data = {
                 "resultado" : idBook,
                 "reviewid" : new_review.id,
+                "reviewrating" : new_review.rating,
+                "reviewuserid" : new_review.user.id,
+                "reviewusername" : new_review.user.first_name,
+                "reviewdate" : datetime.strftime(new_review.created_at, "%d de %B de %Y a las %H:%M"),
+                "review" : new_review.review,
+                "usuarioid" : uploaded_by.id,
             }
             return JsonResponse(data)
-        return redirect(f"/books/{idBook}")
     return redirect("/")
 
 def view_user(request,idUser):
@@ -125,8 +133,9 @@ def view_user(request,idUser):
             idusuario = request.session["id"]
             context = {
                 "usuario" : User.objects.get(id=idusuario),
-                "reviews" : UserBook.objects.filter(user=User.objects.get(id=idUser)),
+                "reviews" : UserBook.objects.filter(user=idUser),
                 "userReview" : User.objects.get(id=idUser),
+                "libros" : Book.objects.filter(review_book__user=idUser).values("id","title").annotate(Count("id")).order_by("-id")
             }
             return render(request, "view_user.html", context)
     return redirect("/")
@@ -135,5 +144,6 @@ def delete_review(request,idReview):
     if request.method == "GET":
         if "id" in request.session:
             delete_review = UserBook.objects.get(id=idReview)
-            delete_review.delete()   
+            delete_review.delete()
+            return JsonResponse({"idReview":idReview})
     return redirect("/")

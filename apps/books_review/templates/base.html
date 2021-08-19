@@ -28,11 +28,12 @@
     {% if usuario %}
     <nav class="uk-navbar-container uk-border-rounded uk-text-center uk-navbar-transparent" uk-navbar>
         <div class="uk-navbar-left">
-            <h1> <a class="uk-text-decoration-none" href="{% url 'books' %}"> Welcome,
+            <h1> <a class="uk-text-decoration-none" href="{% url 'viewUser' idUser=usuario.id %}"> Welcome,
                     {{usuario.first_name}}!</a>
             </h1>
         </div>
         <div class="uk-navbar-right">
+            <a class="uk-margin-right" href="{% url 'books' %}"> Home </a>
             <a class="uk-margin-right" href="{% url 'createBook' %}">Add Books and Review</a>
             <a class="uk-margin-right" href="{% url 'logout' %}">Logout</a>
         </div>

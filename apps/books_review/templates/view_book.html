@@ -6,30 +6,33 @@
     <h3 class="uk-margin-left">{{libro.author.first_name}} {{libro.author.last_name}}</h3>
     <div class="uk-margin-auto" uk-grid>
         <div class="uk-width-1-2@m ">
-            <div id="reviews" class="uk-card uk-card-default uk-card-body uk-border-rounded">
+            <div class="uk-card uk-card-default uk-card-body uk-border-rounded">
                 <h2>Reviews</h2>
-                {% for review in reviews %}
-                <div id="review-{{review.id}}">
-                    <p>Rating:
-                        {% for i in "12345" %}
-                        {% if i <= review.rating|stringformat:"i" %}
-                        <span class="fa fa-star checked"></span>
-                        {% else %}
-                        <span class="fa fa-star"></span>
+                <div id="reviews">
+                    {% for review in reviews %}
+                    <div id="review-{{review.id}}">
+                        <p>Rating:
+                            {% for i in "12345" %}
+                            {% if i <= review.rating|stringformat:"i" %}
+                            <span class="fa fa-star checked"></span>
+                            {% else %}
+                            <span class="fa fa-star"></span>
+                            {% endif %}
+                            {% endfor %}</p>
+                        <p><a href="{% url 'viewUser' idUser=review.user.id %}">{{review.user.first_name}}</a>
+                            says:
+                            <span>{{review.review}}</span></p>
+                        <p class="uk-text-italic">Posted on: {{review.created_at}}</p>
+                        {% if review.user.id == usuario.id %}
+                        <button class="uk-button uk-button-small uk-button-danger uk-border-rounded"
+                            onclick="deleteReview({{review.id}})"
+                            data-href="{% url 'deleteReview' idReview=review.id %}">Delete
+                            this review</button>
                         {% endif %}
-                        {% endfor %}</p>
-                    <p><a href="{% url 'viewUser' idUser=review.user.id %}">{{review.user.first_name}}</a>
-                        says:
-                        <span>{{review.review}}</span></p>
-                    <p class="uk-text-italic">Posted on: {{review.created_at}}</p>
-                    {% if review.user.id == usuario.id %}
-                    <a class="uk-button uk-button-small uk-button-danger uk-border-rounded"
-                        href="{% url 'deleteReview' idReview=review.id %}">Delete this review</a>
-                    {% endif %}
-                    <hr>
+                        <hr>
+                    </div>
+                    {% endfor %}
                 </div>
-
-                {% endfor %}
             </div>
         </div>
         <div class="uk-width-1-2@m">
@@ -66,6 +69,8 @@
         event.preventDefault();
         var form = $(this).serialize();
         $(".uk-text-danger").remove();
+        $("#addReview").val("");
+        $("#addRating").val("-1");
         $.ajax({
             type: "POST",
             url: $(this).attr("action"),
@@ -90,11 +95,48 @@
     });
 
     function appendReview(data) {
-        $(`#reviews`).append(`
+        var stars = ""
+        var buttonDelete = ""
+        for (i = 1; i <= 5; i++) {
+            if (i <= data.reviewrating) {
+                stars += '<span class="fa fa-star checked "></span>'
+            } else {
+                stars += '<span class="fa fa-star "></span>'
+            }
+        }
+        if (data.reviewuserid == data.usuarioid) {
+            buttonDelete +=
+                `<button class="uk-button uk-button-small uk-button-danger uk-border-rounded" onclick="deleteReview(${data.reviewid})" data-href="/books/delete_review/${data.reviewid}">Delete this review</button>`
+        }
+        console.log(buttonDelete)
+        console.log(stars)
+        $(`#reviews`).prepend(`
                 <div id="review-${data.reviewid}">
-                    <p>Rating:</p>
+                    <p>Rating: ${stars}</p>
+                    <p><a href="/users/${data.reviewuserid}">${data.reviewusername} </a>says: <span>${data.review}</span></p>
+                    <p class="uk-text-italic">Posted on: ${data.reviewdate}</p>
+                    ${buttonDelete}
+                    <hr>
                 </div>
             `);
+    };
+
+    function deleteReview(idReview) {
+        $("#div-alert").remove();
+        $.ajax({
+            type: "GET",
+            url: "/books/delete_review/" + idReview,
+            success: function (data) {
+                if ("idReview" in data) {
+                    $(`#review-${idReview}`).remove();
+                } else {
+                    msg =
+                        "<div id='div-alert' class='uk-alert-danger' uk-alert><a class='uk-alert-close' uk-close></a><p>" +
+                        data.datetime + "</p></div>";
+                    $(`#comment-${idComment}`).append(msg);
+                }
+            },
+        });
     };
 </script>
 {% endblock %}

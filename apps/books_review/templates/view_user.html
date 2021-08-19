@@ -8,8 +8,8 @@
     <h4 class="uk-margin-bottom">Total Reviews: {{reviews|length}}</h4>
     <h4>Posted Reviews on the following books:</h4>
     <ul>
-        {% for review in reviews %}
-        <li><a href="{% url 'viewBook' idBook=review.book.id %}">{{review.book.title}}</a></li>
+        {% for review in libros %}
+        <li><a href="{% url "viewBook" idBook=review.id %}">{{review.title}}</a></li>
         {% endfor %}
     </ul>
 </div>

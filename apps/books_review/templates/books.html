@@ -3,11 +3,11 @@
 {% block content %}
 <div class="uk-container uk-margin-auto" uk-grid>
     <div class="uk-width-1-2@s">
-        <div class="uk-card uk-card-default uk-card-body uk-border-rounded">
-            <h2>Recent Book Reviews</h2>
-            <hr>
+        <div class="uk-card uk-card-default uk-padding-small uk-card-body uk-border-rounded">
+            <h3>Recent Book Reviews</h3>
+            <hr class="uk-margin-small">
             {% for libro in libros|slice:":3"%}
-            <h4><a href="{% url 'viewBook' idBook=libro.id %}">{{libro.title}}</a></h4>
+            <h4 class="uk-margin-remove-top"><a href="{% url 'viewBook' idBook=libro.id %}">{{libro.title}}</a></h4>
             <p>Rating:
                 {% for i in "12345" %}
                 {% if i <= libro.review_book.last.rating|stringformat:"i" %}
@@ -21,13 +21,13 @@
                 says:
                 <span>{{libro.review_book.last.review}}</span></p>
             <p class="uk-text-italic">Posted on: {{libro.review_book.last.created_at}}</p>
-            <hr>
+            <hr class="uk-margin-small">
             {% endfor %}
         </div>
     </div>
     <div class="uk-width-1-2@s">
-        <div class="uk-card uk-card-default uk-card-body uk-border-rounded">
-            <h2>Other books with Reviews</h2>
+        <div class="uk-card uk-card-default uk-padding-small uk-card-body uk-border-rounded">
+            <h3>Other books with Reviews</h3>
             <hr>
             <div class="uk-height-max-small  uk-overflow-auto">
                 <ul>
