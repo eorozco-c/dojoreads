@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% block title %}Add Books{% endblock title %}
+{% block content %}
+<div class="uk-card uk-card-default uk-card-body uk-border-rounded ">
+    <form class=" uk-form-stacked " action="{% url 'createBook' %}" method="POST">
+        {% csrf_token %}
+        <legend class="uk-legend">Add a New Book Title and Review</legend>
+        <label class="uk-margin uk-form-label " for="book_title">Book Title:</label>
+        <input class="uk-input uk-form-small" type="text" name="book_title" id="book_title" />
+        <p class="">Author:</p>
+        <div class="uk-margin uk-margin-left">
+            <label class="uk-form-label" for="author_list">Choose from list:</label>
+            <select class="uk-select uk-form-small" name="author_list" id="author_list">
+                <option value="" selected>-- Choose autor --</option>
+                {% for autor in autores %}
+                <option value="{{autor.first_name}} {{autor.last_name}}">{{autor.first_name}} {{autor.last_name}}
+                </option>
+                {% endfor %}
+            </select>
+            <label class="uk-form-label" for="add_author">Or add a new Author:</label>
+            <input class="uk-input uk-form-small" type="text" name="add_author" id="add_author">
+        </div>
+        <label class="uk-form-label " for="review">Review:</label>
+        <textarea class="uk-textarea uk-form-small" name="review" id="review" cols="30" rows="10"></textarea>
+        <label class="uk-form-label" for="rating">Rating:</label>
+        <select class="uk-select uk-form-small" name="rating" id="rating">
+            <option value="-1" selected>-- Choose Rating --</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+        </select>
+        <div class="uk-margin">
+            <input class=" uk-input uk-button uk-button-primary uk-border-rounded" type="submit" value="Add new book" />
+        </div>
+    </form>
+</div>
+{% endblock content %}
+{% block javascript %}
+<script>
+    $("form").submit(function (event) {
+        event.preventDefault();
+        var form = $(this).serialize();
+        $(".uk-text-danger").remove();
+        $.ajax({
+            type: "POST",
+            url: $(this).attr("action"),
+            data: form,
+            dataType: "json",
+            success: function (data) {
+                console.log(data)
+                if ("resultado" in data) {
+                    window.location.href = "/books";
+                } else {
+                    for (const property in data) {
+                        msg =
+                            "<div id='div-alert' class='uk-text-danger uk-margin-remove uk-padding-small'uk-alert><a class='uk-alert-close' uk-close></a><p>" +
+                            data[property] +
+                            "</p></div>";
+
+                        $("#" + property).after(msg)
+                    }
+                }
+            },
+        });
+    });
+</script>
+{% endblock %}

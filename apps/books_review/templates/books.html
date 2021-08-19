@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% block title %}Favorite Books{% endblock title %}
+{% block content %}
+<div class="uk-container uk-margin-auto" uk-grid>
+    <div class="uk-width-1-2@s">
+        <div class="uk-card uk-card-default uk-card-body uk-border-rounded">
+            <h2>Recent Book Reviews</h2>
+            <hr>
+            {% for libro in libros|slice:":3"%}
+            <h4><a href="{% url 'viewBook' idBook=libro.id %}">{{libro.title}}</a></h4>
+            <p>Rating:
+                {% for i in "12345" %}
+                {% if i <= libro.review_book.last.rating|stringformat:"i" %}
+                <span class="fa fa-star checked"></span>
+                {% else %}
+                <span class="fa fa-star"></span>
+                {% endif %}
+                {% endfor %}</p>
+            <p><a
+                    href="{% url 'viewUser' idUser=libro.review_book.last.user.id %}">{{libro.review_book.last.user.first_name}}</a>
+                says:
+                <span>{{libro.review_book.last.review}}</span></p>
+            <p class="uk-text-italic">Posted on: {{libro.review_book.last.created_at}}</p>
+            <hr>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="uk-width-1-2@s">
+        <div class="uk-card uk-card-default uk-card-body uk-border-rounded">
+            <h2>Other books with Reviews</h2>
+            <hr>
+            <div class="uk-height-max-small  uk-overflow-auto">
+                <ul>
+                    {% for libro in libros %}
+                    <li><a href="{% url 'viewBook' idBook=libro.id %}">{{libro.title}}</a></li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

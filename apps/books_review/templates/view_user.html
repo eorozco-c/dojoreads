@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block title %}View User{% endblock title %}
+{% block content %}
+<div class="uk-card uk-card-default uk-card-body uk-border-rounded ">
+    <h1>User Alias: {{userReview.first_name}}</h1>
+    <h4>Name: {{userReview.first_name}} {{userReview.last_name}}</h4>
+    <h4>Email: {{userReview.email}}</h4>
+    <h4 class="uk-margin-bottom">Total Reviews: {{reviews|length}}</h4>
+    <h4>Posted Reviews on the following books:</h4>
+    <ul>
+        {% for review in reviews %}
+        <li><a href="{% url 'viewBook' idBook=review.book.id %}">{{review.book.title}}</a></li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock content %}

@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% block title %}View book{% endblock title %}
+{% block content %}
+<div class="uk-card uk-card-default uk-card-body uk-border-rounded ">
+    <h1>{{libro.title}}</h1>
+    <h3 class="uk-margin-left">{{libro.author.first_name}} {{libro.author.last_name}}</h3>
+    <div class="uk-margin-auto" uk-grid>
+        <div class="uk-width-1-2@m ">
+            <div id="reviews" class="uk-card uk-card-default uk-card-body uk-border-rounded">
+                <h2>Reviews</h2>
+                {% for review in reviews %}
+                <div id="review-{{review.id}}">
+                    <p>Rating:
+                        {% for i in "12345" %}
+                        {% if i <= review.rating|stringformat:"i" %}
+                        <span class="fa fa-star checked"></span>
+                        {% else %}
+                        <span class="fa fa-star"></span>
+                        {% endif %}
+                        {% endfor %}</p>
+                    <p><a href="{% url 'viewUser' idUser=review.user.id %}">{{review.user.first_name}}</a>
+                        says:
+                        <span>{{review.review}}</span></p>
+                    <p class="uk-text-italic">Posted on: {{review.created_at}}</p>
+                    {% if review.user.id == usuario.id %}
+                    <a class="uk-button uk-button-small uk-button-danger uk-border-rounded"
+                        href="{% url 'deleteReview' idReview=review.id %}">Delete this review</a>
+                    {% endif %}
+                    <hr>
+                </div>
+
+                {% endfor %}
+            </div>
+        </div>
+        <div class="uk-width-1-2@m">
+            <div class="uk-card uk-card-default uk-card-body uk-border-rounded">
+                <h2>Add a review</h2>
+                <form class="uk-form-stacked" action="{% url 'viewBook' idBook=libro.id %}" method="POST"
+                    autocomplete="on">
+                    {% csrf_token %}
+                    <label class="uk-form-label " for="addReview">Review:</label>
+                    <textarea class="uk-textarea uk-form-small" name="addReview" id="addReview" cols="30"
+                        rows="10"></textarea>
+                    <label class="uk-form-label" for="addRating">Rating:</label>
+                    <select class="uk-select uk-form-small" name="addRating" id="addRating">
+                        <option value="-1" selected>-- Choose Rating --</option>
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                    </select>
+                    <div class="uk-margin">
+                        <input class=" uk-input uk-button uk-button-primary uk-border-rounded" type="submit"
+                            value="Add new Review" />
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+{% block javascript %}
+<script>
+    $("form").submit(function (event) {
+        event.preventDefault();
+        var form = $(this).serialize();
+        $(".uk-text-danger").remove();
+        $.ajax({
+            type: "POST",
+            url: $(this).attr("action"),
+            data: form,
+            dataType: "json",
+            success: function (data) {
+                console.log(data)
+                if ("resultado" in data) {
+                    appendReview(data);
+                } else {
+                    for (const property in data) {
+                        msg =
+                            "<div id='div-alert' class='uk-text-danger uk-margin-remove uk-padding-small'uk-alert><a class='uk-alert-close' uk-close></a><p>" +
+                            data[property] +
+                            "</p></div>";
+
+                        $("#" + property).after(msg)
+                    }
+                }
+            },
+        });
+    });
+
+    function appendReview(data) {
+        $(`#reviews`).append(`
+                <div id="review-${data.reviewid}">
+                    <p>Rating:</p>
+                </div>
+            `);
+    };
+</script>
+{% endblock %}
